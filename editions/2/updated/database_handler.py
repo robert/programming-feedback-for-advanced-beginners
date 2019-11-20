@@ -21,11 +21,8 @@ class Database():
 
     def __init__(self, db_path):
         self.db_path = db_path
-        if not os.path.exists(db_path):
-            print('Creating database: {}'.format(db_path))
-            self.build_database()
 
-    def build_database(self):
+    def build(self):
         with sqlite3.connect(self.db_path) as con:
             cur = con.cursor()
 
@@ -44,24 +41,21 @@ class Database():
         """
         Add data to database. Expects a dictionary.
         """
-        try:
-            with sqlite3.connect(self.db_path) as con:
-                cur = con.cursor()
-                cur.execute(
-                    "INSERT INTO CommuteTimes values (?,?,?,?,?,?,?,?)",
-                    (
-                        data['Datetime'],
-                        data['Origin'],
-                        data['Destination'],
-                        data['Distance'],
-                        data['Summary'],
-                        data['Fastest'],
-                        data['Slowest'],
-                        data['Warnings'],
-                    )
-                    )
-        except Exception as e:
-            print('Error writing data to database:', e)
+        with sqlite3.connect(self.db_path) as con:
+            cur = con.cursor()
+            cur.execute(
+                "INSERT INTO CommuteTimes values (?,?,?,?,?,?,?,?)",
+                (
+                    data['Datetime'],
+                    data['Origin'],
+                    data['Destination'],
+                    data['Distance'],
+                    data['Summary'],
+                    data['Fastest'],
+                    data['Slowest'],
+                    data['Warnings'],
+                )
+            )
 
     def get_data(self, start_date=None, end_date=None, specific_route=None):
         """
@@ -73,75 +67,26 @@ class Database():
         if specific_route:
             origin, destination = specific_route
 
-        try:
-            with sqlite3.connect(self.db_path) as con:  
-                if specific_route:
-                    if start_date:
-                        if end_date:
-                            # Start date and end date and specific route
-                            query = "\
-                            SELECT * FROM CommuteTimes \
-                            WHERE (\
-                            Datetime > ? AND \
-                            Datetime < ? AND \
-                            Origin = ? AND \
-                            Destination = ? \
-                            )"
-                            params = (start_date, end_date, origin, destination,)
-                        else:
-                            # Start date only and specific route
-                            query = "\
-                            SELECT * FROM CommuteTimes \
-                            WHERE (\
-                            Datetime > ? AND \
-                            Origin = ? AND \
-                            Destination = ? \
-                            )"
-                            params = (start_date, origin, destination,)
-                                                
-                    elif end_date:
-                        # End date only and specific route
-                        query = "\
-                            SELECT * FROM CommuteTimes \
-                            WHERE (\
-                            Datetime < ? AND \
-                            Origin = ? AND \
-                            Destination = ? \
-                            )"
-                        params=(end_date, origin, destination,)
-    
-                    else:
-                        # No start or end date but specific route
-                        query = "\
-                            SELECT * FROM CommuteTimes \
-                            WHERE (\
-                            Origin = ? AND \
-                            Destination = ? \
-                            )"
-                        params = (origin, destination,)
+        filters = []
+        if specific_route:
+            filters.append(("Origin = ?", origin))
+            filters.append(("Destination = ?", destination))
 
-                else:
-                    if start_date:
-                        if end_date:
-                            # Start date and end date
-                            query = "SELECT * FROM CommuteTimes WHERE (Datetime > ? AND Datetime < ?)"
-                            params = (start_date, end_date,)
-                        else:
-                            # Start date only
-                            query = "SELECT * FROM CommuteTimes WHERE Datetime > ?"
-                            params = (start_date,)
-                                                
-                    elif end_date:
-                        # End date only
-                        query = "SELECT * FROM CommuteTimes WHERE Datetime < ?"
-                        params = (end_date,)
-    
-                    else:
-                        # No start or end date
-                        query = "SELECT * FROM CommuteTimes"
-                        params = None
-                    
-                return pd.read_sql_query(query, con=con, parse_dates=['Datetime'], params=params)
+        if start_date:
+            filters.append(("Datetime > ?", start_date))
 
-        except Exception as e:
-            print('Error getting data from database:', e)
+        if end_date:
+            filters.append(("Datetime < ?", end_date))
+
+        query = "SELECT * FROM CommuteTimes "
+        if len(filters) > 0:
+            # l = [f[0] for f in filters] is a Python "list comprehension". It
+            # is shorthand for:
+            #
+            #   l = []
+            #   for f in filters:
+            #       l.append(f[0])
+            query += " WHERE " + " AND ".join([f[0] for f in filters])
+            
+        with sqlite3.connect(self.db_path) as con:  
+            return pd.read_sql_query(query, con=con, parse_dates=['Datetime'], params=[f[1] for f in filters])

@@ -34,7 +34,7 @@ def get_commute_data(origin, destination, api_key):
     worst_case = gmaps.directions(
             origin, destination, mode='driving', traffic_model='pessimistic', departure_time=now)[0]
 
-    commute_data = {
+    return {
         'Datetime'   : now,
         'Origin'     : origin,
         'Destination': destination,
@@ -43,5 +43,4 @@ def get_commute_data(origin, destination, api_key):
         'Fastest'    : round(best_case['legs'][0]['duration_in_traffic']['value']/60.0, 1),  # In minutes
         'Slowest'    : round(worst_case['legs'][0]['duration_in_traffic']['value']/60.0, 1),  # In minutes
         'Warnings'   : ', '.join(best_case['warnings']),  # Accidents, construction, and speed traps
-        }
-    return commute_data
+    }
