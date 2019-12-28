@@ -4,9 +4,9 @@ def player_has_enough_power_to_defeat_enemy(player_stats, enemy_stats):
     # Subtract the enemy power from the
     # player power and make sure that
     # the difference is more than 5.
-    player_stats['power'] = player_stats['power'] - enemy_stats['power']
+    power_diff = player_stats['power'] - enemy_stats['power']
 
-    if player_stats['power'] > EXTRA_POWER_NEEDED_TO_DEFEAT_ENEMY:
+    if power_diff > EXTRA_POWER_NEEDED_TO_DEFEAT_ENEMY:
         return True
     else:
         return False
