@@ -10,12 +10,12 @@ def blank_board(width, height):
     * https://robertheaton.com/2018/10/09/programming-projects-for-advanced-beginners-3-a/
     """
     board = []
+    row = []
     for _ in range(height):
-        row = []
         for _ in range(width):
             row.append(None)
         board.append(row)
-    return board
+        return board
 
 if __name__ == "__main__":
     test_board = blank_board(4, 3)
