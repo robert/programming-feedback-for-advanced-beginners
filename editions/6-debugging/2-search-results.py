@@ -2,7 +2,7 @@ def search_all(queries):
     all_results = []
     for q in queries:
         results = search(q)
-        all_results.append(results)
+        all_results += results
     return all_results
 
 def search(query):
