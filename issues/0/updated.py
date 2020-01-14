@@ -102,13 +102,12 @@ def main():
     ask_recreate()
 
     # ask to register or login
-    undecided = True
-    while undecided:
-        log_type = input("Would you like to register or login? Type register or login: ")
-        if log_type.strip().lower() == "register":
+    while True:
+        log_type = input("Would you like to register or login? Type register or login: ").strip().lower()
+        if log_type == "register":
             register()
             break
-        elif log_type.strip().lower() == "login":
+        elif log_type == "login":
             is_valid_credentials()
             break
         else:
