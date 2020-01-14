@@ -48,12 +48,12 @@ def show_db():
         print(row)
 
 
-def sha_encrypt(pw):
+def sha256(inp):
     """
     Calculates the SHA256 hash of the input and returns it as a
     hexstring.
     """
-    return hashlib.sha256(pw.encode()).hexdigest()
+    return hashlib.sha256(inp.encode()).hexdigest()
 
 
 def register():
@@ -71,7 +71,7 @@ def register():
             print("Passwords are not the same")
 
     # hash password
-    hash_pw = sha_encrypt(pw)
+    hash_pw = sha256(pw)
 
     # save to sqlite3 database. Return error if username taken
     try:
@@ -86,7 +86,7 @@ def is_valid_credentials():
     # get username and password and check if they match db users
     username = input("Please enter a username: ")
     pw = getpass("Please enter a password: ")
-    hash_pw = sha_encrypt(pw)
+    hash_pw = sha256(pw)
 
     # execute sqlite3 command. Returns None if doesn't exist
     select_users = '''SELECT * FROM users WHERE username=? AND password=?;'''
