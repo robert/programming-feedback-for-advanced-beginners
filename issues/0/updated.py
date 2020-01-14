@@ -56,30 +56,23 @@ def sha256(inp):
     return hashlib.sha256(inp.encode()).hexdigest()
 
 
-def register():
-    username = input("Please enter a username: ").lower()
-
-    # ensure passwords match
-    invalid = True
-    while invalid:
-        pw = getpass("Please enter a password: ")
-        pw2 = getpass("Please confirm your password: ")
-
-        if pw == pw2:
-            invalid = False
-        elif pw != pw2:
-            print("Passwords are not the same")
-
-    # hash password
+def create_user(username, pw):
+    """
+    Inserts a row into the user table in the DB with the given
+    credentials. Returns True if the insertion succeeds and
+    False if the username has already been taken.
+    """
     hash_pw = sha256(pw)
 
-    # save to sqlite3 database. Return error if username taken
+    # Save to sqlite3 database. Will throw an IntegrityError
+    # if username already taken.
     try:
         insert_user = "INSERT INTO users VALUES (?, ?);"
         c.execute(insert_user, (username, hash_pw))
+        return True
     except sqlite3.IntegrityError:
-        print("ERROR: Username already exists")
-        register()
+        # Username is already taken
+        return False
 
 
 def is_valid_credentials():
@@ -105,7 +98,24 @@ def main():
     while True:
         log_type = input("Would you like to register or login? Type register or login: ").strip().lower()
         if log_type == "register":
-            register()
+            while True:
+                username = input("Please enter a username: ").lower()
+
+                # ensure passwords match
+                while True:
+                    pw = getpass("Please enter a password: ")
+                    pw2 = getpass("Please confirm your password: ")
+
+                    if pw == pw2:
+                        break
+                    else:
+                        print("Passwords are not the same. Please try again.")
+
+                if create_user(username, pw):
+                    print("Success!")
+                    break
+                else:
+                    print("Username already taken, please try again")
             break
         elif log_type == "login":
             is_valid_credentials()
