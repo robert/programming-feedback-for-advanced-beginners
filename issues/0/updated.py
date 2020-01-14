@@ -75,19 +75,16 @@ def create_user(username, pw):
         return False
 
 
-def is_valid_credentials():
-    # get username and password and check if they match db users
-    username = input("Please enter a username: ")
-    pw = getpass("Please enter a password: ")
+def is_valid_credentials(username, pw):
+    """
+    Returns True if the given credential match a user in the database,
+    and False if they do not.
+    """
     hash_pw = sha256(pw)
 
     # execute sqlite3 command. Returns None if doesn't exist
-    select_users = '''SELECT * FROM users WHERE username=? AND password=?;'''
-    c.execute(select_users, (username, hash_pw))
-    if c.fetchone() is not None:
-        print("Welcome")
-    else:
-        print("Login failed. Username or password is incorrect.")
+    c.execute('''SELECT * FROM users WHERE username=? AND password=?;''', (username, hash_pw))
+    return c.fetchone() is not None
 
 
 def main():
@@ -116,9 +113,18 @@ def main():
                     break
                 else:
                     print("Username already taken, please try again")
+
             break
         elif log_type == "login":
-            is_valid_credentials()
+            # get username and password and check if they match db users
+            username = input("Please enter a username: ")
+            pw = getpass("Please enter a password: ")
+
+            if is_valid_credentials(username, pw):
+                print("Welcome")
+            else:
+                print("Login failed. Username or password is incorrect.")
+
             break
         else:
             print("Please type a valid response")
