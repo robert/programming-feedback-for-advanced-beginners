@@ -23,20 +23,19 @@ def setup_db():
     c.execute(users_db)
 
 
-def ask_recreate():
-    # count users and ask to recreate db
-    count_users = '''SELECT * FROM users;'''
-    c.execute(count_users)
-    num_users = len(c.fetchall())
+def count_users():
+    """
+    Returns the number of users in the database.
+    """
+    c.execute('''SELECT * FROM users;''')
+    return len(c.fetchall())
 
-    print("Your users table currently holds %d users." % num_users)
 
-    del_table = input("Would you like to delete the current table and start over? (y/n): ")
-    if del_table.lower().strip() in ['y', 'yes']:
-        del_stmt = '''DROP TABLE users;'''
-        c.execute(del_stmt)
-
-    setup_db()
+def drop_user_table():
+    """
+    Drops the user table
+    """
+    c.execute('''DROP TABLE users;''')
 
 
 def sha256(inp):
@@ -80,7 +79,14 @@ def is_valid_credentials(username, pw):
 
 def main():
     setup_db()
-    ask_recreate()
+
+    n_users = count_users()
+    print("Your users table currently holds %d users." % n_users)
+
+    should_drop_user_table = input("Would you like to delete the current table and start over? (y/n): ").lower().strip()
+    if should_drop_user_table in ['y', 'yes']:
+        drop_user_table()
+        setup_db()
 
     # ask to register or login
     while True:
