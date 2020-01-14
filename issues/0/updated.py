@@ -39,15 +39,6 @@ def ask_recreate():
     setup_db()
 
 
-def show_db():
-    # displays all registered users
-    c.execute('''SELECT * FROM users;''')
-    rows = c.fetchall()
-
-    for row in rows:
-        print(row)
-
-
 def sha256(inp):
     """
     Calculates the SHA256 hash of the input and returns it as a
