@@ -49,11 +49,11 @@ def show_db():
 
 
 def sha_encrypt(pw):
-    # sha256 hashing
-    encode_hash = hashlib.sha256(pw.encode())
-    hash_pw = encode_hash.hexdigest()
-
-    return hash_pw
+    """
+    Calculates the SHA256 hash of the input and returns it as a
+    hexstring.
+    """
+    return hashlib.sha256(pw.encode()).hexdigest()
 
 
 def register():
