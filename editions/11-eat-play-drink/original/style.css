@@ -1,0 +1,86 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
+
+body {
+  color: #222;
+  font-family: Roboto, sans-serif;
+  margin: 1.5rem;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.title-colors {
+  text-transform: uppercase;
+  font-size: 3rem;
+  letter-spacing: 5px;
+  text-emphasis: light;
+}
+
+.title-colors span:nth-child(10n + 1),
+.red {
+  color: red;
+}
+
+.title-colors span:nth-child(10n + 2),
+.green {
+  color: green;
+}
+
+.title-colors span:nth-child(10n + 3),
+.blue {
+  color: blue;
+}
+
+p {
+  line-height: 1.4;
+}
+
+.button-group {
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
+  display: inline-block;
+}
+
+button {
+  padding: 0.5rem 2rem 0.5rem 2rem;
+  border-radius: 5px;
+  /* margin: 0.2rem; */
+  margin: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.active,
+button:hover {
+  cursor: pointer;
+  border-width: 3px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+button:focus {
+  outline: 0;
+}
+
+.eat {
+  border-color: red;
+}
+
+.play {
+  border-color: green;
+}
+
+.drink {
+  border-color: blue;
+}
+
+.reset {
+  border-color: gray;
+}
+
+#map {
+  height: 400px;
+  width: 100%;
+}

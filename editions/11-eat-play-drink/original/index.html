@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Eat Play Drink</title>
+  </head>
+  <body>
+    <section class="container">
+      <h1 class="title-colors">
+        <span>Eat</span>
+        <span>Play</span>
+        <span>Drink</span>
+      </h1>
+      <p>
+        A list of the best places to <span class="red">eat</span>,
+        <span class="green">play</span>, and
+        <span class="blue">drink</span>
+        in San Francisco, <br />
+        curated by a San Franciso native.
+      </p>
+      <p>Choose from the buttons below to filter your search.</p>
+      <div class="button-group" id="myDiv">
+        <button
+          onclick="filterFunc(this.value);"
+          value="eat"
+          class="eat btn"
+          id="eat"
+        >
+          eat
+        </button>
+        <button
+          onclick="filterFunc(this.value);"
+          value="play"
+          class="play btn"
+          id="play"
+        >
+          play
+        </button>
+        <button
+          onclick="filterFunc(this.value);"
+          value="drink"
+          class="drink btn"
+          id="drink"
+        >
+          drink
+        </button>
+        <button
+          onclick="filterFunc(this.value);"
+          value="reset"
+          class="reset btn"
+          id="reset"
+        >
+          All
+        </button>
+      </div>
+      <div id="map"></div>
+    </section>
+
+    <script src="app.js"></script>
+
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtCHPCcXarjVCPkyLi-YvFQLy3I_tWDXU&callback=initMap"
+    ></script>
+  </body>
+</html>
