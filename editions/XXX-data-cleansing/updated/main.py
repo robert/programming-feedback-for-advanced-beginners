@@ -1,20 +1,8 @@
 import pandas as pd
 import copy
 
-def load_data(file):
-    print("Loading data...")
-    data = pd.read_csv(file)
-    return data
-
-def process_test(t, data):
-    """Wrap function call to each test."""
-    try:
-        func = eval("process_" + t)
-        result = func(data)
-    except NameError:
-        print(f"Error: {t} not implemented")
-        result = None
-    return result
+def load_data(fn):
+    return pd.read_csv(fn)
 
 def report_violations(results):
     print("Reporting violations for correction...")
@@ -26,52 +14,73 @@ def do_stats(results):
         stats[k] = results[k].shape[0]
     return stats
 
-# Implementation of tests
-# could also be in separate library
+def low_profit_margin_products(df):
+    d = df.copy()
+    d['profit'] = d['sales_price'] - d['cost']
+    d['profit_margin'] = d['profit'] / d['sales_price']
+    return d.loc[d['profit_margin'] < 0.1]
 
-def process_T1(data, **kwargs):
-    description = "T1: low profit margin products"
-    if "description_only" in kwargs.keys():
-        description_only = kwargs["description_only"]
-    else:
-        description_only = False
-    if description_only:
-        return description
-    print("  "+description)
-    d = copy.copy(data)
-    d['profit']=d['sales_price']-d['cost']
-    d['profit_margin'] = d['profit']/d['sales_price']
-    res = d.loc[d['profit_margin']<0.1]
-    return res
+def low_sales_price_products(data):
+    d = df.copy()
+    return d.loc[d['sales_price'] < 30]
 
-def process_T2(data, **kwargs):
-    description = "T2: low sales price products"
-    if "description_only" in kwargs.keys():
-        description_only = kwargs["description_only"]
-    else:
-        description_only = False
-    if description_only:
-        return description
-    print("  "+description)
-    d = copy.copy(data)
-    res = d.loc[d['sales_price']<30]
-    return res
 
-# Main program
+class Filter(object):
+
+    """
+    A Filter object is a wrapper around a filter function,
+    with some metadata (eg. name, description) attached.
+    """
+
+    def __init__(self, name, desc, f):
+        """
+        f is the filter function itself (not the result of
+        calling the function on a dataset). It will be the
+        job of the Filter object to run the function on the
+        data it is given
+        """
+        self.name = name
+        self.desc = desc
+        self.f = f
+
+    def apply(self, data):
+        """
+        apply actually runs the filter function that was
+        passed into the constructor and returns the results.
+        """
+        return self.f(data)
+
 
 if __name__=='__main__':
-    # list of tests we want to perform
-    TESTS = ['T1', 'T2', 'T3']
+    """
+    We can use our Filter class to build up a list of all the
+    filters we want to run on our data. Once we have built the
+    list, we can run each Filter in turn.
+    """
+    filters = [
+        Filter(
+            name="T1",
+            desc="Low profit margin products",
+            f=low_profit_margin_products,
+        ),
+        Filter(
+            name="T2",
+            desc="Low sales price products",
+            f=low_sales_price_products,
+        ),
+    ]
 
-    fn='sample_data.csv'
-    data = load_data(fn)
+    fn = 'example-data.csv'
+    df = load_data(fn)
+
+    # We could also 1-line this using a Python list comprehension:
+    #
+    # results = {f.name: f.apply(df) for f in filters}
     results = {}
-    print("Processing Tests...")
-    for t in TESTS:
-        res = process_test(t, data)
-        if res is not None:
-            results[t] = res
+    for f in filters:
+        results[f.name] = f.apply(df)
+
     report_violations(results)
     stats = do_stats(results)
-    for k in stats.keys():
-        print(f"  Test {k}: {stats[k]} violations found")
+    for k, v in stats.items():
+        print(f"  Test {k}: {v} violations found")
