@@ -1,5 +1,4 @@
 import pandas as pd
-import copy
 
 def load_data(fn):
     return pd.read_csv(fn)
