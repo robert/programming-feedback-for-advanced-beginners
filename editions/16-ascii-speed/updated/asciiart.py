@@ -5,6 +5,7 @@ import csv
 import pickle
 from PIL import Image
 from blessings import Terminal
+import math
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -98,8 +99,8 @@ def closest_ANSI_color(color):
     return min(distances, key=distances.get)
 
 # Create ANSI color mask from RGB image array
-def color_mask(imarray):
-    return np.apply_along_axis(closest_ANSI_color, 2, imarray)
+def color_mask(imarray, color_mapper):
+    return np.apply_along_axis(color_mapper, 2, imarray)
     
 # Take picture using imagesnap
 def snapshot():
@@ -135,6 +136,31 @@ def colors_print_to_terminal(character_map, color_array, scale_row_by=2):
             scaled_row += (scale_row_by * pixel)
         print(''.join(scaled_row))
 
+# We use the original author's `ansi_color_dict` that maps
+# from ANSI color codes (eg. 23) to the RGB value
+# represented by that code (eg. (0, 95, 95)). We
+# invert it so that it maps from RGB => ANSI instead
+# of ANSI => RGB. This allows us to easily answer
+# the question "what is the ANSI value corresponding
+# to this RGB value?"
+#
+# TODO: we shouldn't really do this in the body of the file.
+# Tidying this up is left as an exercise for the reader.
+color_dict = pickle.load(open("ansi_color_dict.pkl", "rb"))
+inverted_color_dict = {}
+for ansi, rgb in color_dict.items():
+    inverted_color_dict[str(rgb)] = ansi
+
+# Define gridlines using hexadecimal for ease of comparison
+# with online resources.
+GRIDLINES = [0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF]
+
+def rgb_to_ansi(rgb):
+    def snap_value(val):
+        return min(GRIDLINES, key=lambda el: abs(val - el))
+    rgb = [snap_value(v) for v in rgb]
+    return inverted_color_dict[str(rgb)]
+
 def main():
     parser = init_argparse()
     args = parser.parse_args()
@@ -148,10 +174,11 @@ def main():
     invert = not args.uninvert
     character_array = character_map(imarray, args.method, invert)
     if args.color == True:
-        color_array = color_mask(imarray)
+        color_array = color_mask(imarray, rgb_to_ansi)
         colors_print_to_terminal(character_array, color_array, args.scale)
     else:
         print_to_terminal(character_array, args.scale)
 
 if __name__ == "__main__":
     main()
+
