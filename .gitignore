@@ -1,2 +1,5 @@
 **/*.swp
 **/*.swo
+**/venv/**
+**/*.pyc
+editions/16-ascii-speed/updated-v2/color_map.json
