@@ -6,6 +6,7 @@ import pickle
 from PIL import Image
 from blessings import Terminal
 import math
+import json
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -161,6 +162,42 @@ def rgb_to_ansi(rgb):
     rgb = [snap_value(v) for v in rgb]
     return inverted_color_dict[str(rgb)]
 
+class PrecomputedRgbToAnsiConverter(object):
+
+    """
+    We wrap this functionality in a simple class to allow us
+    to tightly associate the way in which color maps are
+    read from and written to disk, and the way in which they
+    are accessed. We could also consider moving the entire
+    precomputation code into this class, or at least the portion
+    of it that if responsible for choosing the format of the
+    file that is written to disk.
+
+    You could argue that this is  all unnecessarily fancy, but
+    I think it's worthwhile.
+    """
+
+    @staticmethod
+    def write_color_map(fname, color_map):
+        with open(fname, 'w') as f:
+            json.dump(color_map, f)
+
+    @staticmethod
+    def read_color_map(fname):
+        with open(fname, 'r') as f:
+            return json.load(f)
+
+    @staticmethod
+    def from_file(fname):
+        color_map = PrecomputedRgbToAnsiConverter.read_color_map(fname)
+        return PrecomputedRgbToAnsiConverter(color_map)
+
+    def __init__(self, color_map):
+        self.color_map = color_map
+
+    def rgb_to_ansi(self, rgb):
+        return self.color_map[str(tuple(rgb))]
+
 def main():
     parser = init_argparse()
     args = parser.parse_args()
@@ -174,7 +211,9 @@ def main():
     invert = not args.uninvert
     character_array = character_map(imarray, args.method, invert)
     if args.color == True:
-        color_array = color_mask(imarray, rgb_to_ansi)
+        converter = PrecomputedRgbToAnsiConverter.from_file('./color_map.json')
+        color_array = color_mask(imarray, converter.rgb_to_ansi)
+
         colors_print_to_terminal(character_array, color_array, args.scale)
     else:
         print_to_terminal(character_array, args.scale)
