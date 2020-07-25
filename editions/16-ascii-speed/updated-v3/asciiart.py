@@ -162,7 +162,7 @@ def rgb_to_ansi(rgb):
     rgb = [snap_value(v) for v in rgb]
     return inverted_color_dict[str(rgb)]
 
-class PrecomputedRgbToAnsiConverter(object):
+class PrecomputedRgbToAnsiConverterBytes(object):
 
     """
     We wrap this functionality in a simple class to allow us
@@ -179,18 +179,37 @@ class PrecomputedRgbToAnsiConverter(object):
 
     @staticmethod
     def write_color_map(fname, color_map):
-        with open(fname, 'w') as f:
-            json.dump(color_map, f)
+        with open(fname, 'wb') as f:
+            for r, gbdict in color_map.items():
+                for g, bdict in gbdict.items():
+                    for b, ansi in bdict.items():
+                        f.write(bytes([ansi]))
 
     @staticmethod
     def read_color_map(fname):
-        with open(fname, 'r') as f:
-            return json.load(f)
+        color_map = {}
+        with open(fname, 'rb') as f:
+            for r in range(256):
+                for g in range(256):
+                    for b in range(256):
+                        ansi_byte = f.read(1)
+                        ansi_int = ord(ansi_byte)
+
+                        # We return a color map with the keys as strings
+                        # like "(4,65,12)" because that's what our previous
+                        # functions have been doing. By being consistent
+                        # we don't have to change the way the rest of the
+                        # program works. That said, using strings for our
+                        # keys like this is a little fragile and we should
+                        # probably refactor our code to use nested dicts/lists
+                        # like our precomputation code does.
+                        color_map[str((r,g,b))] = ansi_int
+        return color_map
 
     @staticmethod
     def from_file(fname):
-        color_map = PrecomputedRgbToAnsiConverter.read_color_map(fname)
-        return PrecomputedRgbToAnsiConverter(color_map)
+        color_map = PrecomputedRgbToAnsiConverterBytes.read_color_map(fname)
+        return PrecomputedRgbToAnsiConverterBytes(color_map)
 
     def __init__(self, color_map):
         self.color_map = color_map
@@ -211,7 +230,7 @@ def main():
     invert = not args.uninvert
     character_array = character_map(imarray, args.method, invert)
     if args.color == True:
-        converter = PrecomputedRgbToAnsiConverter.from_file('./color_map.json')
+        converter = PrecomputedRgbToAnsiConverterBytes.from_file('./color_map.bin')
         color_array = color_mask(imarray, converter.rgb_to_ansi)
 
         colors_print_to_terminal(character_array, color_array, args.scale)

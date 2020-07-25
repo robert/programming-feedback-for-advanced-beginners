@@ -5,14 +5,15 @@ if __name__ == "__main__":
     color_map = {}
     for r in range(256):
         print(r)
+        color_map[r] = {}
         for g in range(256):
+            color_map[r][g] = {}
             for b in range(256):
-                rgb = (r, g, b)
-                col = asciiart.rgb_to_ansi(rgb)
-                color_map[str(rgb)] = col
+                col = asciiart.rgb_to_ansi((r, g, b))
+                color_map[r][g][b] = col
 
-    asciiart.PrecomputedRgbToAnsiConverter.write_color_map(
-        "./color_map.json",
+    asciiart.PrecomputedRgbToAnsiConverterBytes.write_color_map(
+        "./color_map.bin",
         color_map,
     )
 
